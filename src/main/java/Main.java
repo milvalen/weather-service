@@ -27,7 +27,8 @@ public class Main {
                 throw new RuntimeException("HTTP %d".formatted(response.statusCode()));
             }
             var root = JsonParser.parseString(body).getAsJsonObject();
-            System.out.println("Current temperature: %d".formatted(root.getAsJsonObject("fact").get("temp").getAsInt()));
+            System.out.println("Current temperature: %d".formatted(
+                root.getAsJsonObject("fact").get("temp").getAsInt()));
             var forecasts = root.getAsJsonArray("forecasts");
             var days = Math.min(LIMIT, forecasts.size());
             if (days == 0) {
@@ -35,7 +36,8 @@ public class Main {
                 return;
             }
 
-            System.out.println("Average temperature for %d days: %d".formatted(days, (int)getAvg(forecasts, days)));
+            System.out.println("Average temperature for %d days: %d".formatted(
+                days, (int)getAvg(forecasts, days)));
         } catch (Exception e) {
             System.out.println(getError(e));
         }
@@ -44,7 +46,9 @@ public class Main {
     static HttpResponse<String> getForecast(String key) {
         try {
             return HttpClient.newHttpClient().send(
-                HttpRequest.newBuilder(URI.create("https://api.weather.yandex.ru/v2/forecast?lat=%s&lon=%s&limit=%d".formatted(LAT, LON, LIMIT)))
+                HttpRequest.newBuilder(URI.create(
+                    "https://api.weather.yandex.ru/v2/forecast?lat=%s&lon=%s&limit=%d"
+                        .formatted(LAT, LON, LIMIT)))
                     .header("X-Yandex-Weather-Key", key)
                     .GET()
                     .timeout(Duration.ofSeconds(10))
