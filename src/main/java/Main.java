@@ -27,8 +27,9 @@ public class Main {
                 throw new RuntimeException("HTTP %d".formatted(response.statusCode()));
             }
             var root = JsonParser.parseString(body).getAsJsonObject();
-            System.out.println("Current temperature: %d".formatted(
-                root.getAsJsonObject("fact").get("temp").getAsInt()));
+            var fact = root.getAsJsonObject("fact");
+            var temperature = fact.get("temp").getAsInt();
+            System.out.println("Current temperature: %d".formatted(temperature));
             var forecasts = root.getAsJsonArray("forecasts");
             var days = Math.min(LIMIT, forecasts.size());
             if (days == 0) {
@@ -45,15 +46,14 @@ public class Main {
 
     static HttpResponse<String> getForecast(String key) {
         try {
-            return HttpClient.newHttpClient().send(
-                HttpRequest.newBuilder(URI.create(
-                    "https://api.weather.yandex.ru/v2/forecast?lat=%s&lon=%s&limit=%d"
-                        .formatted(LAT, LON, LIMIT)))
-                    .header("X-Yandex-Weather-Key", key)
-                    .GET()
-                    .timeout(Duration.ofSeconds(10))
-                    .build(),
-                HttpResponse.BodyHandlers.ofString());
+            var url = "https://api.weather.yandex.ru/v2/forecast?lat=%s&lon=%s&limit=%d".formatted(LAT, LON, LIMIT);
+            var request = HttpRequest.newBuilder(URI.create(url))
+                .header("X-Yandex-Weather-Key", key)
+                .GET()
+                .timeout(Duration.ofSeconds(10))
+                .build();
+            var client = HttpClient.newHttpClient();
+            return client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (Exception e) {
             System.out.println(getError(e));
             return null;
@@ -63,8 +63,9 @@ public class Main {
     static double getAvg(JsonArray forecasts, int days) {
         var sum = 0.0;
         for (var i = 0; i < days; i++) {
-            sum += forecasts.get(i).getAsJsonObject()
-                .getAsJsonObject("parts").getAsJsonObject("day").get("temp_avg").getAsDouble();
+            var forecast = forecasts.get(i).getAsJsonObject();
+            var day = forecast.getAsJsonObject("parts").getAsJsonObject("day");
+            sum += day.get("temp_avg").getAsDouble();
         }
 
         return sum / days;
