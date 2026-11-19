@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 
 public class Main {
     private static final double LAT = 55.75;
@@ -34,7 +35,7 @@ public class Main {
                 return;
             }
 
-            System.out.println("Average temperature for %d days: %s".formatted(days, getAvg(forecasts, days)));
+            System.out.println("Average temperature for %d days: %d".formatted(days, (int)getAvg(forecasts, days)));
         } catch (Exception e) {
             System.out.println(getError(e));
         }
@@ -46,6 +47,7 @@ public class Main {
                 HttpRequest.newBuilder(URI.create("https://api.weather.yandex.ru/v2/forecast?lat=%s&lon=%s&limit=%d".formatted(LAT, LON, LIMIT)))
                     .header("X-Yandex-Weather-Key", key)
                     .GET()
+                    .timeout(Duration.ofSeconds(10))
                     .build(),
                 HttpResponse.BodyHandlers.ofString());
         } catch (Exception e) {
